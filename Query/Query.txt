@@ -252,18 +252,40 @@ SET as_std.assignment_clo_id = a_clo.id;
 
 
 ล่าสุด นินิว
+-- เพิ่ม Foreign Key ให้เชื่อมโยงกับ assignment_clo_selection
+ALTER TABLE Assignments_Students
+ADD CONSTRAINT fk_assignment_clo_id
+    FOREIGN KEY (assignment_clo_id)
+    REFERENCES assignment_clo_selection(id)
+    ON DELETE CASCADE   -- กำหนดให้ลบข้อมูลใน Assignments_Students เมื่อข้อมูลใน assignment_clo_selection ถูกลบ
+    ON UPDATE CASCADE;  -- กำหนดให้ข้อมูลใน Assignments_Students ถูกอัพเดตตามข้อมูลใน assignment_clo_selection
 
-DELIMITER //
-CREATE TRIGGER before_insert_assignments_students
-BEFORE INSERT ON assignments_students
-FOR EACH ROW
-BEGIN
-    -- เลือก id ที่เหมาะสมจากตาราง assignment_clo_selection ตาม assignment_id
-    SET NEW.assignment_clo_id = (
-        SELECT id 
-        FROM assignment_clo_selection 
-        WHERE assignment_id = NEW.assignment_id 
-        LIMIT 1
-    );
-END//
-DELIMITER ;
+
+-- ลบ Foreign Key Constraints ก่อน 
+ALTER TABLE Assignments_Students DROP FOREIGN KEY FK_assignments_students_assignment;
+
+-- สร้าง UNIQUE INDEX เพิ่มเติม
+ALTER TABLE Assignments_Students ADD UNIQUE INDEX idx_unique_student_assignment_clo 
+(student_id, assignment_id, assignment_clo_id);
+
+-- 1. ลบ Foreign Key ก่อน
+ALTER TABLE assignments_students
+DROP FOREIGN KEY FK_assignments_students_student;
+
+-- 2. ลบ Primary Key และ Unique Index
+ALTER TABLE assignments_students
+DROP PRIMARY KEY,
+DROP INDEX idx_unique_student_assignment_clo;
+
+-- 3. เพิ่ม ID และตั้งเป็น Primary Key ใหม่
+ALTER TABLE assignments_students
+ADD COLUMN id INT AUTO_INCREMENT PRIMARY KEY FIRST;
+
+-- 4. สร้าง Index เพื่อประสิทธิภาพในการค้นหา
+CREATE INDEX idx_student_id ON assignments_students (student_id);
+CREATE INDEX idx_student_assignment ON assignments_students (student_id, assignment_id);
+CREATE INDEX idx_assignment_clo ON assignments_students (assignment_clo_id);
+
+-- 5. สร้าง Foreign Key กลับคืน
+ALTER TABLE assignments_students
+ADD CONSTRAINT FK_assignments_students_student FOREIGN KEY (student_id) REFERENCES studentdata (student_id);

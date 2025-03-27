@@ -858,6 +858,7 @@ setCurrentStep(3)
 
   // Function to save imported students to the assignment
  // แก้ไขฟังก์ชัน handleSaveImportedStudents
+// แก้ไขฟังก์ชัน handleSaveImportedStudents
 const handleSaveImportedStudents = () => {
   if (importedStudents.length === 0) {
     setImportErrors(["ไม่พบรายชื่อนักเรียนที่จะบันทึก"])
@@ -895,7 +896,8 @@ const handleSaveImportedStudents = () => {
   const studentsData = importedStudents.map((student) => ({
     student_id: student.student_id,
     assignment_id: assignmentIdToUse,
-    name: student.name // เพิ่มชื่อนักศึกษาเพื่อให้สามารถบันทึกลงฐานข้อมูลได้
+    // ไม่ต้องส่ง assignment_clo_id เพราะ backend จะดึงข้อมูลทั้งหมดจาก assignment_id
+    // และทำการเชื่อมโยงกับ CLO ทั้งหมดให้อัตโนมัติ
   }))
   
   console.log("Data being sent to API:", {
@@ -925,9 +927,10 @@ const handleSaveImportedStudents = () => {
       return response.json()
     })
     .then((data) => {
-      setImportSuccess(`บันทึกรายชื่อนักเรียนสำเร็จ จำนวน ${importedStudents.length} คน`)
-      setImportedStudents([])
-      setLoading(false)
+      console.log("Response from server:", data);
+      setImportSuccess(`บันทึกรายชื่อนักเรียนสำเร็จ: ${data.message || `จำนวน ${importedStudents.length} คน`}`);
+      setImportedStudents([]);
+      setLoading(false);
     })
     .catch((error) => {
       console.error("Error saving students:", error)
