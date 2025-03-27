@@ -142,73 +142,84 @@ app.delete('/students/:_', async (req, res) => {
 
 
 // API สำหรับเพิ่มนักศึกษาเข้าสู่ Assignment
-app.post('/api/add_student_to_assignment', async (req, res) => {
-    const { 
-        student_id, 
-        name, 
-        course, 
-        assignment_id, 
-        assignment_name,
-        year 
-    } = req.body;
+// API สำหรับเพิ่มนักศึกษาหลายคนเข้าสู่ Assignment
+app.post('/api/add_students_to_assignment', async (req, res) => {
+    const { students } = req.body;
     
-    // ตรวจสอบข้อมูลที่จำเป็น
-    if (!student_id || !assignment_id) {
+    if (!students || !Array.isArray(students) || students.length === 0) {
         return res.status(400).json({ 
             success: false, 
-            message: 'กรุณาระบุรหัสนักศึกษาและรหัส Assignment'
+            message: 'ไม่มีข้อมูลนักศึกษาที่จะบันทึก'
         });
     }
     
     let conn;
     try {
         conn = await pool.getConnection();
+        await conn.beginTransaction();
         
-        // ตรวจสอบว่านักศึกษาถูกเพิ่มไปแล้วหรือไม่
-        const checkQuery = `
-            SELECT 1 FROM student_assignments 
-            WHERE student_id = ? AND assignment_id = ?
+        // เตรียม query สำหรับการ insert ตามโครงสร้างตารางที่มี assignment_clo_id
+        const insertQuery = `
+            INSERT INTO Assignments_Students (
+                student_id,
+                assignment_id,
+                assignment_clo_id,
+                created_at
+            ) VALUES (?, ?, ?, NOW())
         `;
         
-        const existingAssignments = await conn.query(checkQuery, [student_id, assignment_id]);
+        // จำนวนนักศึกษาที่เพิ่มสำเร็จ
+        let successCount = 0;
         
-        if (existingAssignments && existingAssignments.length > 0) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'นักศึกษารายนี้ถูกเพิ่มเข้า Assignment นี้แล้ว'
-            });
+        for (const student of students) {
+            // ดึง assignment_clo_id จากตาราง assignment_clo_selection
+            const getCloIdQuery = `
+                SELECT id FROM assignment_clo_selection 
+                WHERE assignment_id = ?
+                LIMIT 1
+            `;
+            
+            const cloResults = await conn.query(getCloIdQuery, [student.assignment_id]);
+            const assignment_clo_id = cloResults && cloResults.length > 0 ? cloResults[0].id : null;
+            
+            // ถ้าไม่พบ assignment_clo_id ให้ log และข้ามไป
+            if (!assignment_clo_id) {
+                console.warn(`No assignment_clo_id found for assignment_id: ${student.assignment_id}`);
+                continue;
+            }
+            
+            // ตรวจสอบว่านักศึกษาถูกเพิ่มไปแล้วหรือไม่
+            const checkQuery = `
+                SELECT 1 FROM Assignments_Students 
+                WHERE student_id = ? AND assignment_id = ?
+            `;
+            
+            const existingAssignments = await conn.query(checkQuery, [
+                student.student_id, 
+                student.assignment_id
+            ]);
+            
+            if (!existingAssignments || existingAssignments.length === 0) {
+                // เพิ่มเฉพาะนักศึกษาที่ยังไม่มีในระบบ
+                await conn.query(insertQuery, [
+                    student.student_id,
+                    student.assignment_id,
+                    assignment_clo_id
+                ]);
+                successCount++;
+            }
         }
         
-        // เพิ่มนักศึกษาเข้า Assignment
-        const insertQuery = `
-            INSERT INTO student_assignments (
-                student_id,
-                student_name,
-                assignment_id,
-                assignment_name,
-                course_name,
-                year,
-                status,
-                created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())
-        `;
-        
-        await conn.query(insertQuery, [
-            student_id,
-            name,
-            assignment_id,
-            assignment_name,
-            course,
-            year
-        ]);
+        await conn.commit();
         
         res.status(201).json({ 
             success: true, 
-            message: 'เพิ่มนักศึกษาเข้า Assignment สำเร็จ' 
+            message: `เพิ่มนักศึกษาเข้า Assignment สำเร็จจำนวน ${successCount} คน` 
         });
         
     } catch (error) {
-        console.error('Error adding student to assignment:', error);
+        if (conn) await conn.rollback();
+        console.error('Error adding students to assignment:', error);
         res.status(500).json({ 
             success: false, 
             message: 'เกิดข้อผิดพลาดในการเพิ่มนักศึกษา',
@@ -218,6 +229,184 @@ app.post('/api/add_student_to_assignment', async (req, res) => {
         if (conn) conn.release();
     }
 });
+
+// app.post('/api/add_students_to_assignment', async (req, res) => {
+//     console.log("เริ่มต้น API add_students_to_assignment");
+//     const { students } = req.body;
+
+//     if (!students || !Array.isArray(students) || students.length === 0) {
+//         return res.status(400).json({ 
+//             success: false, 
+//             message: 'ไม่มีข้อมูลนักศึกษาที่จะบันทึก'
+//         });
+//     }
+
+//     console.log(`จำนวนนักศึกษาที่ได้รับ: ${students.length}`);
+//     console.log(`ข้อมูลนักศึกษาตัวอย่าง: ${JSON.stringify(students[0])}`);
+
+//     let conn;
+//     try {
+//         conn = await pool.getConnection();
+//         console.log("เชื่อมต่อกับฐานข้อมูลสำเร็จ");
+
+//         await conn.beginTransaction();
+//         console.log("เริ่มต้น Transaction");
+
+//         // จำนวนนักศึกษาที่เพิ่มสำเร็จ
+//         let successCount = 0;
+//         let insertErrors = [];
+
+//         // 1. บันทึกข้อมูลนักศึกษา (student_id, assignment_id, created_at) ก่อน
+//         for (const student of students) {
+//             let studentAdded = false;  // ประกาศตัวแปรในแต่ละรอบ
+//             try {
+//                 console.log(`กำลังประมวลผลนักศึกษา: ${student.student_id}`);
+
+//                 // ตรวจสอบค่าของ student.assignment_id ก่อนการ query
+//                 if (!student.assignment_id) {
+//                     console.warn(`ไม่พบ assignment_id สำหรับนักศึกษา ${student.student_id}`);
+//                     insertErrors.push(`ไม่พบ assignment_id สำหรับนักศึกษา ${student.student_id}`);
+//                     continue;
+//                 }
+
+//                 const insertSQL = `
+//                     INSERT INTO assignments_students (student_id, assignment_id, created_at)
+//                     VALUES (?, ?, NOW())
+//                 `;
+                
+//                 const [result] = await conn.execute(insertSQL, [
+//                     student.student_id,
+//                     student.assignment_id
+//                 ]);
+
+//                 if (result && result.affectedRows > 0) {
+//                     console.log(`บันทึกข้อมูลนักศึกษา ${student.student_id} สำเร็จ`);
+//                     studentAdded = true;
+//                 } else {
+//                     console.warn(`ไม่สามารถบันทึกข้อมูลนักศึกษา ${student.student_id}`);
+//                 }
+
+//                 if (studentAdded) {
+//                     successCount++;
+//                 }
+//             } catch (studentErr) {
+//                 console.error(`เกิดข้อผิดพลาดในการประมวลผลนักศึกษา ${student.student_id}:`, studentErr.message);
+//                 insertErrors.push(`เกิดข้อผิดพลาดกับนักศึกษา ${student.student_id}: ${studentErr.message}`);
+//             }
+//         }
+
+//         // 2. ดึง CLO ID และอัพเดตข้อมูลใน assignments_students
+//         for (const student of students) {
+//             try {
+//                 console.log(`กำลังดึง CLO ID สำหรับ assignment_id: ${student.assignment_id}`);
+
+//                 const getCloQuery = `
+//                     SELECT id 
+//                     FROM assignment_clo_selection 
+//                     WHERE assignment_id = ?
+//                 `;
+//                 const [cloRows] = await conn.query(getCloQuery, [student.assignment_id]);
+                
+//                 // ตรวจสอบว่า cloRows มีค่าและเป็น array ที่สามารถ iterate ได้
+//                 if (!Array.isArray(cloRows) || cloRows.length === 0) {
+//                     const errorMsg = `ไม่พบข้อมูล CLO สำหรับ assignment_id: ${student.assignment_id}`;
+//                     console.warn(errorMsg);
+//                     insertErrors.push(errorMsg);
+//                     continue;
+//                 }
+
+//                 // วนลูปผ่านแต่ละ CLO ID และอัพเดตข้อมูลใน assignments_students
+//                 for (const cloRow of cloRows) {
+//                     try {
+//                         if (!cloRow.id) {
+//                             console.warn(`ไม่พบค่า id ในผลลัพธ์ CLO สำหรับ assignment_id: ${student.assignment_id}`);
+//                             continue;
+//                         }
+
+//                         const updateSQL = `
+//                             UPDATE assignments_students 
+//                             SET assignment_clo_id = ? 
+//                             WHERE student_id = ? 
+//                               AND assignment_id = ?
+//                         `;
+                        
+//                         const [updateResult] = await conn.execute(updateSQL, [
+//                             cloRow.id, 
+//                             student.student_id, 
+//                             student.assignment_id
+//                         ]);
+
+//                         if (updateResult && updateResult.affectedRows > 0) {
+//                             console.log(`อัพเดต CLO ID สำหรับนักศึกษา ${student.student_id} สำเร็จ`);
+//                         } else {
+//                             console.warn(`ไม่สามารถอัพเดต CLO ID สำหรับนักศึกษา ${student.student_id}`);
+//                         }
+//                     } catch (updateErr) {
+//                         console.error(`เกิดข้อผิดพลาดในการอัพเดต CLO ID สำหรับนักศึกษา ${student.student_id}:`, updateErr.message);
+//                         insertErrors.push(`ไม่สามารถอัพเดต CLO ID สำหรับ student_id: ${student.student_id}: ${updateErr.message}`);
+//                     }
+//                 }
+//             } catch (err) {
+//                 console.error(`เกิดข้อผิดพลาดในการดึงข้อมูล CLO สำหรับ assignment_id ${student.assignment_id}:`, err.message);
+//                 insertErrors.push(`ไม่สามารถดึงข้อมูล CLO สำหรับ assignment_id: ${student.assignment_id}: ${err.message}`);
+//             }
+//         }
+
+//         // ตัดสินใจว่าจะ commit หรือ rollback
+//         if (successCount > 0) {
+//             await conn.commit();
+//             console.log(`Transaction commit สำเร็จ สำหรับนักศึกษา ${successCount} คน`);
+//         } else {
+//             await conn.rollback();
+//             console.log("ไม่มีข้อมูลถูกบันทึก ทำการ rollback");
+//         }
+
+//         // สร้าง response
+//         const response = { 
+//             success: successCount > 0, 
+//             message: successCount > 0 
+//                 ? `เพิ่มนักศึกษาเข้า Assignment สำเร็จจำนวน ${successCount} คน` 
+//                 : 'ไม่สามารถบันทึกข้อมูลนักศึกษาได้'
+//         };
+
+//         if (insertErrors.length > 0) {
+//             response.errors = insertErrors;
+//         }
+
+//         res.status(successCount > 0 ? 201 : 400).json(response);
+
+//     } catch (error) {
+//         console.error('เกิดข้อผิดพลาดในการเพิ่มนักศึกษา:', error.message);
+
+//         if (conn) {
+//             try {
+//                 await conn.rollback();
+//                 console.log("Transaction rollback สำเร็จ");
+//             } catch (rollbackErr) {
+//                 console.error("เกิดข้อผิดพลาดในการ rollback:", rollbackErr.message);
+//             }
+//         }
+
+//         res.status(500).json({ 
+//             success: false, 
+//             message: 'เกิดข้อผิดพลาดในการเพิ่มนักศึกษา',
+//             error: error.message
+//         });
+//     } finally {
+//         if (conn) {
+//             try {
+//                 conn.release();
+//                 console.log("ปล่อยการเชื่อมต่อฐานข้อมูลสำเร็จ");
+//             } catch (releaseErr) {
+//                 console.error("เกิดข้อผิดพลาดในการปล่อยการเชื่อมต่อ:", releaseErr.message);
+//             }
+//         }
+//     }
+// });
+
+
+
+
 
 // API สำหรับดึงข้อมูลนักศึกษาใน Assignment
 app.get('/api/get_assignment_students/:assignment_id', async (req, res) => {

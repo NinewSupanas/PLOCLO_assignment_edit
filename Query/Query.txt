@@ -251,3 +251,19 @@ JOIN assignment_clo_selection AS a_clo ON as_std.assignment_id = a_clo.assignmen
 SET as_std.assignment_clo_id = a_clo.id;
 
 
+ล่าสุด นินิว
+
+DELIMITER //
+CREATE TRIGGER before_insert_assignments_students
+BEFORE INSERT ON assignments_students
+FOR EACH ROW
+BEGIN
+    -- เลือก id ที่เหมาะสมจากตาราง assignment_clo_selection ตาม assignment_id
+    SET NEW.assignment_clo_id = (
+        SELECT id 
+        FROM assignment_clo_selection 
+        WHERE assignment_id = NEW.assignment_id 
+        LIMIT 1
+    );
+END//
+DELIMITER ;
