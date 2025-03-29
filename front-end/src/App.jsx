@@ -37,7 +37,8 @@ function App() {
                     <Route path="/editcourse" element={<EditCourse />} />
                     <Route path="/editclo" element={<EditCLO />} />
                     <Route path="*" element={<NotFound />} />
-                    <Route path="/assignment/:id" element={<AssignmentDetail/>} />
+                    <Route path="/assignment/:id" element={<AssignmentDetail />} />
+                    {/* <Route path="/assignment/:assignmentId" element={<AssignmentDetail />} /> */}
                     <Route path="/assigment" element={<Assigment/>} />
                     
             </Routes>

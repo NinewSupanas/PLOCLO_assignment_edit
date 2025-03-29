@@ -289,3 +289,19 @@ CREATE INDEX idx_assignment_clo ON assignments_students (assignment_clo_id);
 -- 5. สร้าง Foreign Key กลับคืน
 ALTER TABLE assignments_students
 ADD CONSTRAINT FK_assignments_students_student FOREIGN KEY (student_id) REFERENCES studentdata (student_id);
+
+----
+CREATE TABLE student_assignment_scores (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id VARCHAR(20) NOT NULL,
+  assignment_id INT NOT NULL,
+  assignment_clo_id INT NOT NULL,
+  score DECIMAL(5,2) DEFAULT 0 NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES studentdata(student_id),
+  FOREIGN KEY (assignment_id) REFERENCES assignments(assignment_id),
+  FOREIGN KEY (assignment_clo_id) REFERENCES assignment_clo_selection(id),
+  UNIQUE KEY unique_score (student_id, assignment_id, assignment_clo_id)
+);
+

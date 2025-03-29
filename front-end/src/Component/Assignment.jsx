@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { FaBars } from "react-icons/fa"
 import * as XLSX from "xlsx"
+import { useNavigate } from "react-router-dom"
 
 function Assignment() {
   // ย้าย hooks ทั้งหมดมาไว้ที่ระดับบนสุดของ component
@@ -12,6 +13,7 @@ const [currentAssignment, setCurrentAssignment] = useState(null)
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const navigate = useNavigate()
 
   // Step 1: Assignment Information state
   const [universities, setUniversities] = useState([])
@@ -999,15 +1001,25 @@ const handleSaveImportedStudents = () => {
     setSelectedYear("")
   }
 
+
   // Render loading state
   if (loading) return <div>กำลังโหลดข้อมูล...</div>
   if (error) return <div>เกิดข้อผิดพลาด: {error}</div>
 
+  // Modify this function to navigate to the detail page instead of just setting selected assignment
+  const handleAssignmentClick = (assignment) => {
+    // Set the selected assignment in state (if you still need this)
+    setSelectedAssignment(assignment)
+    // Navigate to the detail page
+    navigate(`/assignment/${assignment.assignment_id}`)
+  }
+
   return (
     <div
-      className="container-fluid py-4 d-flex flex-column min-vh-100"
-      style={{ backgroundColor: "#f9f9f9", overflowX: "hidden", paddingTop: "70px" }}
-    >
+    className="container-fluid py-4 d-flex flex-column min-vh-100"
+    style={{ backgroundColor: "#f9f9f9", overflowX: "hidden", paddingTop: "70px" }}
+  >
+
       {/* Header */}
       <div className="d-flex align-items-center mb-4 sticky-top bg-white p-3 shadow-sm">
         <button className="btn btn-outline-dark me-3">
@@ -1611,20 +1623,31 @@ const handleSaveImportedStudents = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {assignments.map((assignment, index) => (
-                          <tr
-                            key={assignment.assignment_id}
-                            style={{ cursor: "pointer" }}
-                            onClick={() => setSelectedAssignment(assignment)}
-                          >
-                            <td>{assignment.assignment_name}</td>
-                            <td>{assignment.section_id}</td>
-                            <td>{assignment.semester_id}</td>
-                            <td>{assignment.year}</td>
-                            <td>{new Date(assignment.created_at).toLocaleDateString("th-TH")}</td>
-                          </tr>
-                        ))}
-                      </tbody>
+                          {assignments.map((assignment, index) => (
+                            <tr
+                              key={assignment.assignment_id}
+                              className="assignment-row" // เพิ่ม class เพื่อใช้กับ CSS
+                              style={{ 
+                                cursor: "pointer",
+                                transition: "all 0.2s ease" // เพิ่ม transition เพื่อให้ effect เปลี่ยนแบบนุ่มนวล
+                              }}
+                              onClick={() => handleAssignmentClick(assignment)}
+                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#e9f5ff"} // เปลี่ยนสีพื้นหลังเมื่อเมาส์ hover
+                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = ""} // กลับสู่สีปกติเมื่อเมาส์ออก
+                            >
+                              <td>
+                                <div className="d-flex align-items-center">
+                                  <span>{assignment.assignment_name}</span>
+                                  <span className="ms-2 text-primary small">(คลิกเพื่อดูรายละเอียด)</span> {/* เพิ่มข้อความบอกให้คลิก */}
+                                </div>
+                              </td>
+                              <td>{assignment.section_id}</td>
+                              <td>{assignment.semester_id}</td>
+                              <td>{assignment.year}</td>
+                              <td>{new Date(assignment.created_at).toLocaleDateString("th-TH")}</td>
+                            </tr>
+                          ))}
+                        </tbody>
                     </table>
                   </div>
                 )}
