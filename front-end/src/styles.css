@@ -1,0 +1,631 @@
+* {
+    font-family: sans-serif;
+    box-sizing: border-box;
+    /* margin: 0;
+    padding: 0; */
+}
+
+body {
+    /* margin: 0;
+    padding: 0; */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* ให้เว็บสูงอย่างน้อยเท่ากับขนาดจอ */
+    background-color: #F0F0F0;
+}
+
+.nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 85px; /* ลองเพิ่มความสูงเป็น 70px (ถ้าสูงกว่า ให้ปรับเพิ่ม) */
+    background-color: #FFFFFF;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1rem;
+    z-index: 1000;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.container {
+    margin: 0;
+    text-align: center;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+    justify-content: flex-end;
+}
+
+/* ปรับปรุงเมนูหลักให้พร้อมรองรับอนิเมชั่น */
+.nav-list {
+    font-weight: 100;
+    font-size: 1rem;
+    position: relative; /* เพิ่มเพื่อรองรับแถบอนิเมชั่น */
+}
+
+/* ปรับแต่ง <li> ที่อยู่ใน .nav-list */
+.nav-list > li {
+    position: relative;
+    display: inline-block;
+}
+
+/* สไตล์สำหรับลิงค์ในเมนูหลัก */
+.nav a {
+    color: inherit;
+    text-decoration: none;
+    height: auto;
+    display: flex;
+    align-items: center;
+    padding: .25rem;
+    position: relative; /* เพิ่มเพื่อให้สามารถทำงานร่วมกับอนิเมชั่นได้ */
+    z-index: 1; /* ให้ลิงค์อยู่เหนือแถบอนิเมชั่น */
+}
+
+/* ยกเลิกเอฟเฟกต์ hover เดิม เปลี่ยนเป็นแบบใหม่ */
+.nav a:hover {
+    text-decoration: none;
+    color: #000000; /* คงสีเดิมไว้เพราะเราจะใช้แถบอนิเมชั่นแทน */
+}
+
+/* Animation bar - แถบอนิเมชั่นที่จะเลื่อนไปมา */
+.animation-bar {
+    position: absolute;
+    height: 3px; /* ความสูงของแถบ */
+    bottom: -5px; /* ตำแหน่งด้านล่างของลิงค์ */
+    background: #FF8C00; /* สีแถบให้เป็นสีเดียวกับสี hover เดิม */
+    border-radius: 8px;
+    transition: all .5s ease 0s;
+    z-index: 0;
+}
+
+/* Active state - เมนูที่เลือกอยู่ */
+.nav-list li.active a {
+    color: #FF8C00;
+}
+
+.site-title {
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    margin: 0;
+    width: auto;
+}
+
+/* เพิ่มสไตล์สำหรับ PLOCLO เมื่อกำลังอยู่ที่หน้าแรก */
+.site-title.home-active {
+    color: #FF8C00;
+    position: relative;
+}
+
+/* เพิ่ม underline สำหรับ PLOCLO เมื่อกำลังอยู่ที่หน้าแรก */
+.site-title.home-active::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: #FF8C00;
+    bottom: -5px;
+    left: 0;
+    border-radius: 8px;
+}
+
+.language-selector {
+    margin-left: auto;
+    padding-right: 1rem;
+    position: relative;
+}
+
+.language-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 10rem;
+    background-color: #FFFFFF;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+    padding: 0.5rem 0;
+    list-style: none;
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    
+    /* เปลี่ยนเป็น display grid */
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+}
+
+.language-selector:hover .language-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.language-menu li {
+    padding: 0.5rem 1.5rem;
+    cursor: pointer;
+}
+
+.language-menu li:hover {
+    background-color: #f8f9fa;
+    color: #FF8C00;
+}
+
+.language-label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.language-label::after {
+    content: "";
+    display: inline-block;
+    margin-left: 0.5em;
+    vertical-align: 0.2em;
+    border-top: 0.3em solid;
+    border-right: 0.3em solid transparent;
+    border-bottom: 0;
+    border-left: 0.3em solid transparent;
+    transition: transform 0.3s ease;
+}
+
+.language-selector:hover .language-label::after {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Styles */
+.nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Grid helper classes */
+.d-grid {
+    display: grid;
+}
+
+.gap-0 {
+    gap: 0;
+}
+
+/* Hover dropdown */
+.nav-item:hover .dropdown-menu {
+    display: grid;
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-toggle {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    font-size: 1rem;
+    font-weight: 100;
+    display: flex;
+    align-items: center;
+    color: #000000;
+}
+
+.dropdown-toggle:hover {
+    color: #FF8C00;
+}
+
+.dropdown-toggle::after {
+    content: "";
+    display: inline-block;
+    margin-left: 0.5em;
+    vertical-align: 0.2em;
+    border-top: 0.3em solid;
+    border-right: 0.3em solid transparent;
+    border-bottom: 0;
+    border-left: 0.3em solid transparent;
+    transition: transform 0.3s ease;
+}
+
+.nav-item:hover .dropdown-toggle::after {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    display: grid;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 10rem;
+    padding: 0.5rem 0;
+    margin: 0.125rem 0 0;
+    font-size: 1rem;
+    color: #000000;
+    text-align: left;
+    list-style: none;
+    background-color: #FFFFFF;
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+    z-index: 1001;
+    grid-template-columns: 1fr;
+    gap: 0;
+    
+    /* Animation properties */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.dropdown-menu li {
+    width: 100%;
+}
+
+/* เปลี่ยนสไตล์DropDown menu เพื่อให้แสดงสีส้มเฉพาะตัวเลือกที่ active */
+.nav .dropdown-menu a {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1.5rem;
+    clear: both;
+    font-weight: 400;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+    color: #000000; /* สีเริ่มต้นเป็นสีดำ */
+    text-decoration: none;
+}
+
+/* ยกเลิกการเปลี่ยนสีเดิมทั้งหมดสำหรับดรอปดาวน์เมนู */
+.dropdown-menu a:hover,
+.dropdown-menu a:focus {
+    /* ยกเลิกสไตล์เดิม */
+    color: inherit;
+    text-decoration: none;
+    background-color: #f8f9fa;
+}
+
+/* ทำให้ selector มีความเฉพาะเจาะจงมากขึ้นเพื่อแก้ไขปัญหา */
+li.nav-item .dropdown-menu a.active {
+    color: #FF8C00;
+}
+
+li.nav-item .dropdown-menu a:not(.active) {
+    color: #000000;
+}
+
+.btn-link {
+    font-weight: 400;
+    color: #000000;
+    text-decoration: none;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.btn-link:hover {
+    color: #FF8C00;
+    text-decoration: none;
+}
+
+/* Active state for dropdown */
+.nav-item.dropdown {
+    position: relative;
+}
+
+
+/* Form styles */
+.d-flex {
+    display: flex;
+    align-items: center;
+}
+
+.form-select {
+    display: block;
+    padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #FFFFFF;
+    background-color: #6b7280;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    appearance: none;
+}
+
+.me-2 {
+    margin-right: 0.5rem;
+}
+
+.text-white {
+    color: #000000;
+}
+
+html, body {
+    overflow: hidden;
+    height: 100%;
+  }
+  
+  .snap-container {
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .program-item {
+    color: inherit; /* Default text color */
+  }
+  
+  .program-item:hover, 
+  .program-item:active {
+    color: #FF8C00; /* Orange color on hover and click */
+  }
+
+  /* CSS สำหรับแก้ไขปัญหาเนื้อหาล้นจอ */
+
+/* วิธีที่ 1: แก้ไขที่ container หลัก */
+.main-container {
+    height: 100vh; /* หรือใช้ค่าที่เหมาะสม */
+    overflow-y: auto; /* เพิ่ม scrollbar แนวตั้ง */
+  }
+  
+  /* วิธีที่ 2: แก้ไขที่ body และ html */
+  html, body {
+    height: 100%;
+    overflow-y: auto;
+  }
+  
+  /* วิธีที่ 3: แก้ไขเฉพาะส่วนที่มีปัญหา (form หรือส่วนที่มีเนื้อหามาก) */
+  .form-container {
+    max-height: 80vh; /* จำกัดความสูงสูงสุด */
+    overflow-y: auto; /* เพิ่ม scrollbar แนวตั้ง */
+    padding-bottom: 20px; /* เพิ่มระยะห่างด้านล่าง */
+  }
+  
+  /* รองรับการแสดงผลบนหน้าจอขนาดเล็ก */
+  @media (max-height: 768px) {
+    .form-container {
+      max-height: 70vh;
+    }
+  }
+
+  /* CSS สำหรับ Container ของ editPLO เพื่อให้มีลักษณะเหมือน editprogram */
+
+/* ปรับตัว container หลัก */
+.program-editor-container {
+    width: 90%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  /* ให้ body มีพื้นหลังสีเทาอ่อน */
+  body {
+    background-color: #F0F0F0;
+  }
+  
+  /* สำหรับแก้ไขหน้า editPLO */
+  .plo-management-container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 10px auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+  }
+  
+  /* สำหรับ header ของ PLO */
+  .plo-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* ปรับแต่ง select dropdown ให้เหมือนกัน */
+  .select-wrapper {
+    margin-bottom: 15px;
+  }
+  
+  .select-wrapper label {
+    display: inline-block;
+    margin-right: 10px;
+    min-width: 150px;
+  }
+  
+  .select-wrapper select {
+    padding: 8px 12px;
+    min-width: 200px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background-color: #6b7280;
+    color: white;
+  }
+
+  /* CSS แก้ไขปัญหาสัดส่วนและการถูก Navbar บัง */
+
+.plo-management-container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 85px auto 30px; /* เพิ่ม margin-top เพื่อไม่ให้ถูก navbar บัง */
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+  }
+  
+  .filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .filter-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .filter-label {
+    min-width: 150px;
+    margin-right: 10px;
+  }
+  
+  .filter-select {
+    flex-grow: 1;
+    max-width: 500px;
+    height: 38px;
+    background-color: #6b7280;
+    color: white;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+  }
+  
+  /* ตรึงความกว้างของ dropdown เพื่อไม่ให้เปลี่ยนเมื่อเลือก program */
+  .fixed-width-dropdown {
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  /* ปรับปรุงรูปแบบของปุ่ม */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 10px;
+  }
+  
+  /* รองรับการแสดงผลบนหน้าจอขนาดต่างๆ */
+  @media (max-width: 768px) {
+    .plo-management-container {
+      width: 95%;
+      padding: 15px;
+      margin-top: 70px;
+    }
+    
+    .filter-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+    
+    .filter-label {
+      min-width: auto;
+    }
+    
+    .action-buttons {
+      flex-wrap: wrap;
+    }
+  }
+
+  /* CSS สำหรับปรับปรุงการแสดงตาราง PLO */
+
+/* ปรับปรุงตาราง PLO */
+.plo-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* สำคัญ: ช่วยให้สามารถควบคุมความกว้างคอลัมน์ได้ดีขึ้น */
+  }
+  
+  .plo-table th, .plo-table td {
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    vertical-align: top; /* ให้ข้อความเริ่มต้นจากด้านบนของเซลล์ */
+  }
+  
+  .plo-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    text-align: center;
+    position: sticky; /* ทำให้ header ติดอยู่เวลาเลื่อนลง */
+    top: 0;
+  }
+  
+  /* กำหนดความกว้างแต่ละคอลัมน์ */
+  .plo-code-col {
+    width: 15%;
+    text-align: center;
+  }
+  
+  .plo-name-col {
+    width: 60%; /* ให้พื้นที่มากที่สุดสำหรับ PLO Name */
+  }
+  
+  .plo-engname-col {
+    width: 15%;
+    text-align: center;
+  }
+  
+  .plo-actions-col {
+    width: 10%;
+    text-align: center;
+  }
+  
+  /* สไตล์สำหรับเซลล์ข้อมูล - ไม่ตัดข้อความและแสดงทั้งหมด */
+  .plo-cell-content {
+    white-space: normal; /* ให้ข้อความขึ้นบรรทัดใหม่เมื่อเกินความกว้าง */
+    word-wrap: break-word; /* ตัดคำเมื่อจำเป็น */
+    overflow: visible; /* แสดงเนื้อหาทั้งหมด ไม่ตัด */
+    min-height: 50px; /* กำหนดความสูงขั้นต่ำ */
+    line-height: 1.4; /* เพิ่มระยะห่างระหว่างบรรทัด */
+    text-align: left; /* จัดข้อความชิดซ้าย */
+  }
+  
+  /* สไตล์สำหรับปุ่มในตาราง */
+  .plo-table-btn {
+    width: 100%;
+    margin-bottom: 5px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    color: white;
+  }
+  
+  .plo-edit-btn {
+    background-color: #007bff;
+  }
+  
+  .plo-delete-btn {
+    background-color: #dc3545;
+  }
+  
+  /* Container สำหรับตาราง */
+  .plo-table-container {
+    overflow-x: auto; /* เพิ่ม scrollbar แนวนอนถ้าจำเป็น */
+    margin: 20px 0;
+    max-height: 600px; /* กำหนดความสูงสูงสุดและเพิ่ม scrollbar เมื่อเกิน */
+    overflow-y: auto;
+  }

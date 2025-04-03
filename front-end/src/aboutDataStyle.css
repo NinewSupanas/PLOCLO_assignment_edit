@@ -1,0 +1,278 @@
+/* นำเข้าฟอนต์ Kanit */
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+/* กำหนดฟอนต์ Kanit เป็นฟอนต์หลัก */
+body, h1, h2, h3, h4, h5, h6, p, span, div {
+  font-family: 'Kanit', sans-serif !important;
+}
+
+/* จัดการ scroll snap ให้สไลด์แต่ละหน้า */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ซ่อนแถบเลื่อนสีดำกลางจอ */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent; /* ทำให้แถบเลื่อนโปร่งใส */
+}
+
+/* สำหรับ Firefox */
+* {
+  scrollbar-width: none;
+}
+
+/* สำหรับ IE และ Edge */
+body {
+  -ms-overflow-style: none;
+}
+
+/* คอนเทนเนอร์สำหรับ scroll snap */
+.snap-container {
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  position: relative;
+  padding-top: 60px; /* เพิ่มพื้นที่ด้านบนสำหรับ navbar */
+}
+
+/* แต่ละส่วนที่ต้องการให้ snap */
+.snap-section {
+  height: calc(100vh - 120px); /* ลดความสูงลงเพื่อให้พอดีกับ navbar */
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 220px;
+}
+
+/* ABOUT title ที่อยู่ด้านล่าง navbar */
+.about-title-container {
+  position: relative;
+  text-align: center;
+  padding: 0px 0;
+  margin-top: 280px; /* ให้ห่างจาก navbar */
+  z-index: 1;
+}
+
+/* สไตล์สำหรับหัวข้อ ABOUT */
+.about-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+/* ลบ margin-top เดิมเพราะไม่จำเป็นแล้ว */
+.container2 {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.version-section {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 15px;
+}
+
+/* สไตล์สำหรับกรอบสีขาว */
+.white-box {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 35px 0px;
+  margin-top: 20px;
+  max-height: calc(100vh - 200px); /* ให้พอดีกับความสูงหน้าจอ */
+  overflow-y: auto;
+}
+
+/* สไตล์สำหรับป้าย version */
+.version-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -20px;
+  background: #FF8C00;
+  color: white;
+  padding: 8px 30px;
+  border-radius: 30px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+/* สไตล์สำหรับรูปภาพแบบวงกลม */
+.circle-image {
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #FF8C00;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* สไตล์สำหรับชื่อภาษาไทย */
+.name-thai {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #374151;
+  text-align: center;
+  width: 100%;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+  height: auto;
+  overflow: visible;
+  white-space: normal;
+  padding: 0 5px;
+}
+
+.name-eng {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  display: block;
+  padding: 0 5px;
+  margin-bottom: 0.5rem;
+}
+
+/* ปรับขนาดฟอนต์เล็กลงเพื่อให้พอดีกับพื้นที่ */
+.version2-container .name-thai {
+  font-size: 1rem !important;
+}
+
+/* สไตล์สำหรับแต่ละการ์ดใน version 2 */
+.member-card {
+  overflow: visible;
+  margin: 0 15px !important;
+  padding: 0 10px !important;
+  flex: 0 0 28% !important;
+  max-width: 28% !important;
+}
+
+/* สไตล์สำหรับแต่ละการ์ด advisor */
+.advisor-badge {
+  display: inline-block;
+  padding: 0.25rem 1rem;
+  border-radius: 999px;
+  background: #FFF0E0;
+  color: #FF8C00;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0rem;
+}
+
+/* พิเศษสำหรับ advisor container */
+.advisor-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0px;
+  padding: 0 20px;
+}
+
+.advisor-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 5px;
+}
+
+/* ปุ่มนำทางด้านข้าง - ปรับปรุงเพื่อให้มองเห็นชัดเจนขึ้น */
+.scroll-nav {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 10px 5px;
+  border-radius: 30px;
+}
+
+.scroll-nav a {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: rgba(255, 140, 0, 0.3);
+  margin: 8px 0;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.scroll-nav a:after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.scroll-nav a.active {
+  background-color: #FF8C00;
+  transform: scale(1.2);
+  border-color: #FFF;
+  box-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
+}
+
+.scroll-nav a:hover {
+  background-color: #FF8C00;
+  transform: scale(1.1);
+}
+
+/* ให้แน่ใจว่า About ไม่บัง navbar */
+.navbar, nav {
+  z-index: 10000 !important; /* ทำให้ navbar อยู่ด้านหน้าสุด */
+}
+
+/* เพิ่ม CSS สำหรับทำให้ snap ทำงานได้ดีขึ้น */
+.snap-container > * {
+  scroll-snap-stop: always;
+}
+
+/* เพิ่มขนาดให้ section เพื่อให้แน่ใจว่า scroll snap ทำงานได้ดี */
+#version1, #version2, #advisor {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .advisor-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .snap-section {
+    height: auto;
+    min-height: calc(100vh - 60px);
+  }
+  
+  .about-title {
+    font-size: 2.5rem;
+  }
+  
+  .scroll-nav {
+    right: 10px;
+  }
+  
+  .scroll-nav a {
+    width: 12px;
+    height: 12px;
+    margin: 6px 0;
+  }
+}
